@@ -11,11 +11,14 @@ module Associatable
       source_options = through_options.model_class.assoc_options[source_name]
 
       home_table = self.class.table_name
+
       through_table = through_options.model_class.table_name
       through_foreign_key = through_options.foreign_key
+      through_primary_key = through_options.primary_key
+
       source_table = source_options.model_class.table_name
       source_foreign_key = source_options.foreign_key
-      primary_key = source_options.primary_key
+      source_primary_key = source_options.primary_key
 
       result = DBConnection.execute(<<-SQL, self.id)
         SELECT
@@ -25,13 +28,13 @@ module Associatable
         JOIN
           #{through_table}
         ON
-          #{through_foreign_key} = #{through_table}.#{primary_key}
+          #{home_table}.#{through_foreign_key} = #{through_table}.#{through_primary_key}
         JOIN
           #{source_table}
         ON
-          #{source_foreign_key} = #{source_table}.#{primary_key}
+          #{through_table}.#{source_foreign_key} = #{source_table}.#{source_primary_key}
         WHERE
-          #{home_table}.#{primary_key} = ?
+          #{home_table}.id = ?
       SQL
       source_options.model_class.new(result.first)
     end

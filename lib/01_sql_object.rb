@@ -96,7 +96,7 @@ class SQLObject
   end
 
   def insert
-    # byebug
+
     self.id = self.class.all.length + 1
     col_names = attributes.keys.inspect.gsub(/[^0-9A-Za-z, _]/, '')
     col_syms = attributes.keys.inspect.gsub(/[^0-9A-Za-z, _:]/, '')

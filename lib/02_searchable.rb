@@ -8,7 +8,7 @@ module Searchable
     params.each do |key, value|
       str << " #{key} = ? AND"
     end
-    # byebug
+
     params = DBConnection.execute(<<-SQL, *params.values)
       SELECT
         *
