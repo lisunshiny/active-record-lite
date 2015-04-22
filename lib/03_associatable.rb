@@ -37,27 +37,43 @@ end
 
 module Associatable
   # Phase IIIb
-  def belongs_to(name, options = {})
-    byebug
-    options = BelongsToOptions.new(name, options)
-    foreign_key_name = options.foreign_key
-    foreign_key_value = send(foreign_key_name)
-    primary_key_name = options.primary_key
-    model_class = options.model_class
+  attr_writer :assoc_options
 
-    define_method(name) {
-      model_class.where({ primary_key_name => foreign_key_value })
-    }
+  def belongs_to(name, options = {})
+    assoc_options[name] = BelongsToOptions.new(name, options)
+
+    define_method(name) do
+      opts = self.class.assoc_options[name]
+      foreign_key_name = opts.foreign_key
+      primary_key_name = opts.primary_key
+      model_class = opts.model_class
+
+      foreign_key_value = self.send(foreign_key_name)
+
+      model_class.where({ primary_key_name => foreign_key_value }).first
+    end
 
   end
 
   def has_many(name, options = {})
-    # ...
+    options2 = HasManyOptions.new(name, self.to_s, options)
+
+    define_method(name) do
+      foreign_key_name = options2.foreign_key
+      primary_key_name = options2.primary_key
+      model_class = options2.model_class
+      primary_key_value = self.send(primary_key_name)
+
+      model_class.where({foreign_key_name => primary_key_value})
+    end
   end
 
   def assoc_options
+    @assoc_options ||= {}
     # Wait to implement this in Phase IVa. Modify `belongs_to`, too.
   end
+
+
 end
 
 class SQLObject
